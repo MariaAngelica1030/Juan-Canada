@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Juan Canada</title>
+<style>
+  :root { --bg:#f6f4fb; --card:#fff; --ink:#1f1b2e; --muted:#6b6780; --accent:#7c4dff; --line:#e6e2f2; --good:#1b8a5a; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14121c; --card:#1e1b2b; --ink:#f1eefb; --muted:#9b97b3; --accent:#a98bff; --line:#2e2a42; --good:#4cd99a; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; padding:16px; }
+  .wrap { max-width:480px; margin:0 auto; }
+  @media (min-width:900px) {
+    .wrap { max-width:1000px; }
+    .layout { display:grid; grid-template-columns:420px 1fr; gap:18px; align-items:start; }
+  }
+  .grp { margin-top:10px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .grp-h { display:flex; justify-content:space-between; padding:9px 12px; background:var(--bg); font-weight:600; }
+  .ord { display:flex; justify-content:space-between; gap:10px; padding:9px 12px; border-top:1px dashed var(--line); font-size:.92rem; }
+  .ord .sub { color:var(--muted); font-size:.8rem; }
+  .ord .del { color:#d9534f; font-size:.75rem; border:0; background:transparent; padding:2px 0; }
+  button.add { width:100%; padding:12px; border:0; background:var(--accent); color:#fff; border-radius:10px; font-size:1rem; font-weight:600; margin-top:12px; }
+  button.ghost { width:100%; padding:10px; border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:10px; font-size:.9rem; margin-top:10px; }
+  h1 { font-size:1.3rem; margin:4px 0 14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:14px; }
+  label { display:block; font-size:.8rem; color:var(--muted); margin:10px 0 4px; }
+  input, select { width:100%; font-size:1.05rem; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink); }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .seg button { flex:1; padding:10px; border:0; background:var(--bg); color:var(--muted); font-size:.95rem; }
+  .seg button.on { background:var(--accent); color:#fff; }
+  .line { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:.95rem; }
+  .line:last-child { border-bottom:0; }
+  .line span:first-child { color:var(--muted); }
+  .total { font-size:1.6rem; font-weight:700; color:var(--accent); }
+  .total-row { display:flex; justify-content:space-between; align-items:baseline; padding-top:10px; }
+  .profit { color:var(--good); }
+  button.reset { width:100%; padding:12px; border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:10px; font-size:.95rem; }
+  small { color:var(--muted); display:block; margin-top:6px; font-size:.75rem; }
+  button.save { width:100%; padding:14px; border:0; background:var(--accent); color:#fff; border-radius:12px; font-size:1.05rem; font-weight:600; margin-bottom:10px; }
+  button.mini { border:0; background:transparent; color:var(--muted); font-size:.8rem; padding:4px 8px; }
+  .item { display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line); }
+  .item:last-child { border-bottom:0; }
+  .item .nm { font-weight:600; }
+  .item .sub { color:var(--muted); font-size:.8rem; }
+  .item .amt { text-align:right; white-space:nowrap; }
+  .item .del { color:#d9534f; font-size:.75rem; border:0; background:transparent; padding:2px 0; }
+  .empty { color:var(--muted); font-size:.9rem; padding:10px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🍁 Juan Canada</h1>
+<div class="layout">
+<div class="main">
+
+<div class="card">
+  <label style="margin-top:0">Item name</label>
+  <input id="name" type="text" placeholder="e.g. Nike shoes, Tim Hortons mug">
+  <div class="row">
+    <div><label>Item price (per piece)</label><input id="price" type="number" inputmode="decimal" placeholder="0"></div>
+    <div><label>Qty</label><input id="qty" type="number" inputmode="numeric" value="1" min="1"></div>
+  </div>
+  <div class="row">
+    <div><label>Exchange rate to ₱</label><input id="fx" type="number" inputmode="decimal" value="1" step="any"></div>
+    <div><label>Weight (kg, total)</label><input id="weight" type="number" inputmode="decimal" placeholder="0" step="any"></div>
+  </div>
+  <small>Exchange rate: leave 1 if the price is already in ₱.</small>
+</div>
+
+<div class="card">
+  <div class="row">
+    <div><label>Shipping rate (₱ per kg)</label><input id="rate" type="number" inputmode="decimal" value="0" step="any"></div>
+    <div><label>Min. shipping (₱)</label><input id="minship" type="number" inputmode="decimal" value="0" step="any"></div>
+  </div>
+  <label>Your profit</label>
+  <div class="seg" id="ptype">
+    <button data-t="pct" class="on">% of item</button>
+    <button data-t="fixed">₱ per piece</button>
+    <button data-t="kg">₱ per kg</button>
+  </div>
+  <input id="profit" type="number" inputmode="decimal" value="10" step="any" style="margin-top:8px">
+  <div class="row">
+    <div><label>Tax / fees (%)</label><input id="tax" type="number" inputmode="decimal" value="0" step="any"></div>
+    <div><label>Tax applies to</label>
+      <select id="taxbase">
+        <option value="all">Everything</option>
+        <option value="item">Item only</option>
+        <option value="itemship">Item + shipping</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="result">
+  <div class="line"><span>Item cost</span><span id="r-item">₱0.00</span></div>
+  <div class="line"><span>Shipping</span><span id="r-ship">₱0.00</span></div>
+  <div class="line"><span>Profit</span><span id="r-profit" class="profit">₱0.00</span></div>
+  <div class="line"><span>Tax / fees</span><span id="r-tax">₱0.00</span></div>
+  <div class="total-row"><span>Charge customer</span><span class="total" id="r-total">₱0.00</span></div>
+  <div class="line" style="margin-top:8px"><span>Per piece</span><span id="r-per">₱0.00</span></div>
+  <div class="total-row" style="border-top:1px solid var(--line);margin-top:6px">
+    <span>In CAD</span><span class="total" id="r-cad">C$0.00</span>
+  </div>
+  <div class="line"><span>CAD per piece</span><span id="r-cadper">C$0.00</span></div>
+  <label>₱ per 1 CAD (today's rate)</label>
+  <input id="cadrate" type="number" inputmode="decimal" placeholder="e.g. 40.5" step="any">
+  <small>Check the current rate (Google or your bank) and type it here. It's saved for next time.</small>
+</div>
+
+<button class="save" id="save">＋ Save item to list</button>
+<button class="reset" id="reset">Clear item (keep my rates)</button>
+
+</div>
+<div class="side">
+<div class="card" id="listcard" style="margin-top:14px">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong>Saved items</strong>
+    <button class="mini" id="clearall">Clear all</button>
+  </div>
+  <div id="list"></div>
+  <div class="total-row" id="grand" style="display:none;border-top:1px solid var(--line);margin-top:8px">
+    <span>Grand total</span><span style="text-align:right"><b id="g-php">₱0.00</b><br><small id="g-cad" style="margin:0"></small></span>
+  </div>
+</div>
+
+<div class="card" id="ordercard">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong>Customer orders</strong>
+    <button class="mini" id="clearorders">Clear all</button>
+  </div>
+  <label>Customer name</label>
+  <input id="ocust" type="text" list="custlist" placeholder="e.g. Ate Joy" autocomplete="off">
+  <datalist id="custlist"></datalist>
+  <label>Product name</label>
+  <input id="oprod" type="text" placeholder="e.g. Lululemon belt bag">
+  <div class="row">
+    <div><label>Color</label><input id="ocolor" type="text" placeholder="e.g. Black"></div>
+    <div><label>Qty</label><input id="oqty" type="number" inputmode="numeric" value="1" min="1"></div>
+  </div>
+  <label>Price (₱, total for this order)</label>
+  <input id="oprice" type="number" inputmode="decimal" placeholder="0" step="any">
+  <button class="ghost" id="usecalc">↑ Use name, qty &amp; total from calculator</button>
+  <button class="add" id="addorder">＋ Add to customer list</button>
+  <div id="orders"></div>
+  <div class="total-row" id="ogrand" style="display:none;border-top:1px solid var(--line);margin-top:10px">
+    <span>All customers</span><b id="og-php">₱0.00</b>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value) || 0;
+  const peso = n => "₱" + n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  let ptype = "pct";
+  const KEYS = ["fx","rate","minship","profit","tax","taxbase","cadrate"];
+  const cad = n => "C$" + n.toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function save() {
+    try {
+      const s = { ptype };
+      KEYS.forEach(k => s[k] = $(k).value);
+      localStorage.setItem("pasabuy", JSON.stringify(s));
+    } catch (e) {}
+  }
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem("pasabuy") || "null");
+      if (!s) return;
+      KEYS.forEach(k => { if (s[k] !== undefined) $(k).value = s[k]; });
+      if (s.ptype) setType(s.ptype);
+    } catch (e) {}
+  }
+  function setType(t) {
+    ptype = t;
+    document.querySelectorAll("#ptype button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  }
+
+  function calc() {
+    const qty = Math.max(1, num("qty"));
+    const item = num("price") * num("fx") * qty;
+    const w = num("weight");
+    let ship = w * num("rate");
+    if (w > 0) ship = Math.max(ship, num("minship"));
+    const p = num("profit");
+    const profit = ptype === "pct" ? item * p / 100 : ptype === "fixed" ? p * qty : p * w;
+    const base = { all: item + ship + profit, item: item, itemship: item + ship }[$("taxbase").value];
+    const tax = base * num("tax") / 100;
+    const total = item + ship + profit + tax;
+    $("r-item").textContent = peso(item);
+    $("r-ship").textContent = peso(ship);
+    $("r-profit").textContent = peso(profit);
+    $("r-tax").textContent = peso(tax);
+    $("r-total").textContent = peso(total);
+    $("r-per").textContent = peso(total / qty);
+    const cr = num("cadrate");
+    $("r-cad").textContent = cr > 0 ? cad(total / cr) : "enter rate";
+    $("r-cadper").textContent = cr > 0 ? cad(total / qty / cr) : "—";
+    last = { qty, total, cadTotal: cr > 0 ? total / cr : null, unit: num("price"), fx: num("fx"), weight: w };
+    save();
+  }
+
+  let last = null;
+  let items = [];
+  const esc = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function saveItems() { try { localStorage.setItem("pasabuy-items", JSON.stringify(items)); } catch (e) {} }
+  function loadItems() { try { items = JSON.parse(localStorage.getItem("pasabuy-items") || "[]"); } catch (e) { items = []; } }
+
+  function render() {
+    const box = $("list");
+    if (!items.length) {
+      box.innerHTML = '<div class="empty">No items yet. Fill in an item and tap “Save item to list”.</div>';
+      $("grand").style.display = "none";
+      return;
+    }
+    box.innerHTML = items.map((it, i) =>
+      '<div class="item"><div><div class="nm">' + esc(it.name) + '</div>' +
+      '<div class="sub">' + it.qty + ' pc' + (it.qty > 1 ? 's' : '') + ' · ' + it.weight + ' kg · base ' + it.unit + (it.fx !== 1 ? ' ×' + it.fx : '') + '</div>' +
+      '<button class="del" data-i="' + i + '">Remove</button></div>' +
+      '<div class="amt"><b>' + peso(it.total) + '</b>' +
+      (it.cadTotal != null ? '<div class="sub">' + cad(it.cadTotal) + '</div>' : '') + '</div></div>'
+    ).join("");
+    const gp = items.reduce((a, b) => a + b.total, 0);
+    const allCad = items.every(i => i.cadTotal != null);
+    $("g-php").textContent = peso(gp);
+    $("g-cad").textContent = allCad ? cad(items.reduce((a, b) => a + b.cadTotal, 0)) : "";
+    $("grand").style.display = "flex";
+  }
+
+  document.querySelectorAll("#ptype button").forEach(b => b.addEventListener("click", () => { setType(b.dataset.t); calc(); }));
+  document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calc));
+  $("reset").addEventListener("click", () => { $("price").value = ""; $("weight").value = ""; $("qty").value = 1; calc(); });
+
+  $("save").addEventListener("click", () => {
+    if (!last || last.total <= 0) { alert("Enter an item price first."); return; }
+    items.push(Object.assign({ name: $("name").value.trim() || "Item " + (items.length + 1) }, last));
+    saveItems(); render();
+    $("name").value = ""; $("price").value = ""; $("weight").value = ""; $("qty").value = 1;
+    calc();
+  });
+  $("list").addEventListener("click", e => {
+    const i = e.target.dataset && e.target.dataset.i;
+    if (i === undefined) return;
+    items.splice(+i, 1); saveItems(); render();
+  });
+  $("clearall").addEventListener("click", () => {
+    if (items.length && confirm("Clear all saved items?")) { items = []; saveItems(); render(); }
+  });
+
+  let orders = [];
+  function saveOrders() { try { localStorage.setItem("pasabuy-orders", JSON.stringify(orders)); } catch (e) {} }
+  function loadOrders() { try { orders = JSON.parse(localStorage.getItem("pasabuy-orders") || "[]"); } catch (e) { orders = []; } }
+
+  function renderOrders() {
+    const box = $("orders");
+    const names = [];
+    orders.forEach(o => { if (names.indexOf(o.cust) < 0) names.push(o.cust); });
+    $("custlist").innerHTML = names.map(n => '<option value="' + esc(n) + '">').join("");
+    if (!orders.length) {
+      box.innerHTML = '<div class="empty">No orders yet.</div>';
+      $("ogrand").style.display = "none";
+      return;
+    }
+    box.innerHTML = names.map(n => {
+      const mine = orders.map((o, i) => ({ o: o, i: i })).filter(x => x.o.cust === n);
+      const sub = mine.reduce((a, x) => a + x.o.price, 0);
+      return '<div class="grp"><div class="grp-h"><span>' + esc(n) + '</span><span>' + peso(sub) + '</span></div>' +
+        mine.map(x =>
+          '<div class="ord"><div><div>' + esc(x.o.prod) + '</div>' +
+          '<div class="sub">' + (x.o.color ? esc(x.o.color) + ' · ' : '') + 'qty ' + x.o.qty + '</div>' +
+          '<button class="del" data-o="' + x.i + '">Remove</button></div>' +
+          '<div><b>' + peso(x.o.price) + '</b></div></div>'
+        ).join("") + '</div>';
+    }).join("");
+    $("og-php").textContent = peso(orders.reduce((a, b) => a + b.price, 0));
+    $("ogrand").style.display = "flex";
+  }
+
+  $("usecalc").addEventListener("click", () => {
+    if (!last || last.total <= 0) { alert("Enter an item price in the calculator first."); return; }
+    if ($("name").value.trim()) $("oprod").value = $("name").value.trim();
+    $("oqty").value = last.qty;
+    $("oprice").value = last.total.toFixed(2);
+  });
+  $("addorder").addEventListener("click", () => {
+    const cust = $("ocust").value.trim();
+    const prod = $("oprod").value.trim();
+    if (!cust || !prod) { alert("Enter the customer name and product name."); return; }
+    orders.push({
+      cust: cust, prod: prod, color: $("ocolor").value.trim(),
+      qty: Math.max(1, parseFloat($("oqty").value) || 1),
+      price: parseFloat($("oprice").value) || 0
+    });
+    saveOrders(); renderOrders();
+    $("oprod").value = ""; $("ocolor").value = ""; $("oqty").value = 1; $("oprice").value = "";
+  });
+  $("orders").addEventListener("click", e => {
+    const i = e.target.dataset && e.target.dataset.o;
+    if (i === undefined) return;
+    orders.splice(+i, 1); saveOrders(); renderOrders();
+  });
+  $("clearorders").addEventListener("click", () => {
+    if (orders.length && confirm("Clear all customer orders?")) { orders = []; saveOrders(); renderOrders(); }
+  });
+
+  load();
+  loadItems();
+  render();
+  loadOrders();
+  renderOrders();
+  calc();
+})();
+</script>
+</body>
+</html>
